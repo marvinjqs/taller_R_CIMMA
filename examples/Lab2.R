@@ -13,11 +13,12 @@ pkgs = c("tidyverse", "data.table", "openxlsx", "mice")
 # install.packages(pkgs)
 lapply(pkgs, library, character.only = TRUE)
 
+
 ######################################
 
 # Configurar nuestro directorio de trabajo (ruta de la carpeta)
 
-setwd("D:/TALLER-R-HIDROMETEO/R")
+setwd("D:/PROYECTOS-R/taller_R_CIMMA/examples")
 
 df <- read.csv("MATUCANA-HISTORICO.csv", 
                header = F, 
@@ -27,9 +28,14 @@ df <- read.csv("MATUCANA-HISTORICO.csv",
 
 names(df) <- c("ANHO", "MES", "DIA", "PP", "TMAX", "TMIN")
 
+summary(df)
+
+
 # Crear una columna con las fechas incluidas
 
 df$FECHA <- paste(df$ANHO, df$MES, df$DIA, sep = "-")
+
+str(df)
 
 # Cambiar el formato de la columna a uno reconocible por R
 
@@ -42,24 +48,54 @@ df$FECHA <- as.Date(df$FECHA, format = "%Y-%m-%d")
 summary(df)
 md.pattern(df)
 
-#boxplot.stats(dat$hwy)$out
+boxplot(df$TMAX)
+
+boxplot(df$TMIN)
+
+boxplot(df$PP)
+
+
+boxplot.stats(df$TMAX)$out
+
+out_tmin <- boxplot.stats(df$TMIN)$out
+
+
+
+df2 <- df[-out_tmin, ]
+
+
+
 
 # Completar los valores faltantes de ser necesario
 
-df_mice <- mice(data,m=5,maxit=50,meth='pmm',seed=500)
-summary(tempData)
+df_mice <- mice(df2,m=5,maxit=50,meth='pmm',seed=500)
+
+summary(df_mice)
 
 df_complete <- complete(df_mice,1)
+
+df3 <- df_complete
 
 ######################################
 
 # Obtener una columna con las fechas en formato mensual o anual
 
-df$FECHA_m <- format(df$FECHA, format = "%Y-%m")
+df3$FECHA_m <- format(df3$FECHA, format = "%Y-%m")
+
+df3$FECHA_a <- format(df3$FECHA, format = "%Y")
 
 # Obtener los promedios, maximos, minimos, etc
 
-PP_PROM_m <- aggregate(PP ~ FECHA_m, df, mean)
+PP_ACUM_m <- aggregate(PP ~ FECHA_m, df3, sum)
+
+TMAX_PROM <- aggregate(TMAX ~ FECHA_m, df3, mean)
+
+TMIN_ANUAL <- aggregate(TMIN ~ FECHA_a, df3, mean)
+
+
+plot(TMIN_ANUAL$TMIN)
+
+
 
 # Completar dias faltantes y asignar NA a las variables
 df2 <- df %>%

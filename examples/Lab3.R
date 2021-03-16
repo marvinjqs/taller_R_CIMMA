@@ -1,4 +1,5 @@
-# ANÁLISIS Y PROCESAMIENTO DE LOS DATOS DEL SENSOR MQ7
+
+# AN�LISIS Y PROCESAMIENTO DE LOS DATOS DEL SENSOR MQ7
 # ----------------------------------------------------
 library(openair)
 library(dplyr)
@@ -6,13 +7,15 @@ library(lubridate)
 
 # LECTURA DE LOS DATOS DEL MONITOREO ----------
 
-setwd("C:/Users/marvi/Desktop/atmosferica/")
+setwd("D:/PROYECTOS-R/taller_R_CIMMA/examples")
 
 data_mq7 <- read.csv("DATA_MQ_FINAL.csv", header = T, 
-                     sep = ";", stringsAsFactors = F, encoding = "UTF-8")
+                     sep = ";", stringsAsFactors = F)
+
 
 names(data_mq7) = c("TEMPERATURA_C", "HUMEDAD_RELATIVA_%", 
                     "PPM_CO_SENSOR1", "PPM_CO_SENSOR2")
+
 
 # CONVERSIÓN DE UNIDADES DE PPA A ug/m3 --------
 
@@ -22,6 +25,17 @@ data_mq7$ug_m3_CO_SENSOR1 <- (data_mq7$PPM_CO_SENSOR1 * 28.01 * 1000) / K
 
 data_mq7$ug_m3_CO_SENSOR2 <- (data_mq7$PPM_CO_SENSOR2 * 28.01 * 1000) / K
 
+
+plot(data_mq7$TEMPERATURA_C,  data_mq7$`HUMEDAD_RELATIVA_%`, type = "p")
+
+hist(data_mq7$`HUMEDAD_RELATIVA_%`)
+
+qqplot(data_mq7$TEMPERATURA_C, data_mq7$`HUMEDAD_RELATIVA_%`)
+
+boxplot(data_mq7$PPM_CO_SENSOR1)
+
+
+
 # PROCESAMIENTO DE DATOS -----------
 
 date <- seq(ymd_hm('2019-11-14 20:00'), by = '150 secs', length.out = nrow(data_mq7))
@@ -30,29 +44,35 @@ data_mq7 <- cbind(date,data_mq7)
 
 str(data_mq7)
 
+
+
 plot.new()
 
 timePlot(data_mq7, pollutant = c("PPM_CO_SENSOR1", "PPM_CO_SENSOR2"),
          name.pol = c("SENSOR 1", "SENSOR 2"), smooth = T,
-         xlab = " ", ylab = "ppm CO", cols = c("red","blue"),
-         main = "CONCENTRACIÓN DE CO EN INTERIORES - 2019/11/14",
-         avg.time = "1 hour", ref.y = list(h = 35, lty = 5))
+         xlab = "Tiempo", ylab = "ppm CO", cols = c("red","blue"),
+         main = "CONCENTRACION DE CO EN INTERIORES - 2019/11/14",
+         avg.time = "10 min", ref.y = list(h = 35, lty = 5))
 
 
 timePlot(data_mq7, pollutant = c("ug_m3_CO_SENSOR1", "ug_m3_CO_SENSOR2"),
          name.pol = c("SENSOR 1", "SENSOR 2"), smooth = T,
          xlab = " ", ylab = "ug/m3 CO", cols = c("red","blue"),
-         main = "CONCENTRACIÓN DE CO EN INTERIORES - 2019/11/14",
+         main = "CONCENTRACIoN DE CO EN INTERIORES - 2019/11/14",
          avg.time = "1 hour") 
 
 
 
-pairs(data_mq7,
+
+pairs(iris,
       lower.panel = panel.smooth,
       upper.panel = NULL,
       col = "skyblue3")
 
+
+
 plot.new()
+
 scatterPlot(data_mq7, x = "TEMPERATURA_C", y = "PPM_CO_SENSOR2",
             method = "density", col = "jet")
 
